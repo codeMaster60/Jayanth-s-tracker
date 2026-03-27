@@ -445,29 +445,44 @@ select:focus{border-color:var(--ac);}select option{background:#1b1e22;}
   </div>
 </div>
 
-<!-- SETUP SCREEN (first time) -->
-<div id="setup" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9998;overflow-y:auto;">
+<!-- SETUP SCREEN -->
+<div id="setup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9998;overflow-y:auto;backdrop-filter:blur(4px);">
   <div style="max-width:480px;margin:60px auto;padding:0 20px;">
-    <div style="background:var(--sf);border:0.5px solid var(--b2);border-radius:16px;padding:40px 36px;">
-      <div style="font-family:var(--mo);font-size:10px;color:var(--ac);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;">One-time setup</div>
-      <div style="font-size:20px;font-weight:600;margin-bottom:8px;">Connect Cloud Storage</div>
-      <div style="font-size:12px;color:var(--m2);font-family:var(--mo);margin-bottom:24px;line-height:1.7;">
-        To sync your tasks across all devices, this tracker uses <strong style="color:var(--tx)">JSONBin.io</strong> (free).<br><br>
-        1. Go to <a href="https://jsonbin.io" target="_blank" style="color:var(--ac)">jsonbin.io</a> and create a free account<br>
-        2. Click <strong style="color:var(--tx)">API Keys</strong> in the dashboard<br>
-        3. Copy your <strong style="color:var(--tx)">Master Key</strong> and paste below
-      </div>
-      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+    <div style="background:var(--sf);border:0.5px solid var(--b2);border-radius:16px;padding:36px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
         <div>
-          <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--mu);margin-bottom:5px;font-family:var(--mo);">Master Key</div>
-          <input id="setupKey" type="text" placeholder="$2a$10$…" style="width:100%;background:var(--s2);border:0.5px solid var(--b2);border-radius:8px;padding:10px 14px;font-family:var(--mo);font-size:13px;color:var(--tx);outline:none;transition:border-color .15s;"
-            onfocus="this.style.borderColor='var(--ac)'" onblur="this.style.borderColor='var(--b2)'"/>
+          <div style="font-family:var(--mo);font-size:10px;color:var(--ac);letter-spacing:.15em;text-transform:uppercase;margin-bottom:4px;">Cloud Sync Setup</div>
+          <div style="font-size:18px;font-weight:600;">Connect JSONBin Storage</div>
         </div>
+        <button onclick="hideSetup()" style="background:none;border:none;color:var(--mu);font-size:18px;cursor:pointer;padding:4px;">✕</button>
       </div>
-      <button onclick="setupConnect()" style="width:100%;background:var(--ac);color:#0c0d0f;border:none;border-radius:8px;padding:11px;font-family:var(--fn);font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px;">Connect & Start</button>
-      <div id="setupErr" style="font-size:11px;color:var(--rd);min-height:16px;font-family:var(--mo);text-align:center;"></div>
-      <div style="margin-top:16px;padding-top:16px;border-top:0.5px solid var(--b1);">
-        <div style="font-size:10px;color:var(--mu);font-family:var(--mo);">Your API key is stored only in your browser. All data is stored in your own JSONBin account.</div>
+
+      <div style="font-size:12px;color:var(--m2);font-family:var(--mo);margin-bottom:20px;line-height:1.8;background:var(--s2);border-radius:8px;padding:12px 14px;">
+        1. Go to <a href="https://jsonbin.io" target="_blank" style="color:var(--ac);">jsonbin.io</a> → Sign up free<br>
+        2. Dashboard → <strong style="color:var(--tx)">API Keys</strong> → copy <strong style="color:var(--tx)">Master Key</strong><br>
+        3. Paste below and click <strong style="color:var(--ac)">Create New Bin</strong>
+      </div>
+
+      <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--mu);margin-bottom:5px;font-family:var(--mo);">Master Key</div>
+      <input id="setupKey" type="text" placeholder="$2a$10$…" autocomplete="off"
+        style="width:100%;background:var(--s2);border:0.5px solid var(--b2);border-radius:8px;padding:10px 14px;font-family:var(--mo);font-size:12px;color:var(--tx);outline:none;margin-bottom:12px;"
+        onfocus="this.style.borderColor='var(--ac)'" onblur="this.style.borderColor='var(--b2)'"/>
+
+      <button onclick="setupConnect()" style="width:100%;background:var(--ac);color:#0c0d0f;border:none;border-radius:8px;padding:11px;font-family:var(--fn);font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;">Create New Bin & Connect</button>
+
+      <div style="margin:16px 0;border-top:0.5px solid var(--b1);padding-top:16px;">
+        <div style="font-size:11px;color:var(--mu);margin-bottom:8px;">Already have a Bin ID from another device?</div>
+        <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--mu);margin-bottom:5px;font-family:var(--mo);">Bin ID</div>
+        <input id="setupBinId" type="text" placeholder="paste your bin ID here"
+          style="width:100%;background:var(--s2);border:0.5px solid var(--b2);border-radius:8px;padding:10px 14px;font-family:var(--mo);font-size:12px;color:var(--tx);outline:none;margin-bottom:8px;"
+          onfocus="this.style.borderColor='var(--ac)'" onblur="this.style.borderColor='var(--b2)'"/>
+        <button onclick="setupConnectExisting()" style="width:100%;background:var(--s3);color:var(--m2);border:0.5px solid var(--b2);border-radius:8px;padding:10px;font-family:var(--fn);font-size:13px;cursor:pointer;">Connect to Existing Bin</button>
+      </div>
+
+      <div id="setupErr" style="font-size:11px;color:var(--rd);min-height:16px;font-family:var(--mo);text-align:center;margin-top:4px;"></div>
+
+      <div style="margin-top:14px;padding-top:14px;border-top:0.5px solid var(--b1);">
+        <div style="font-size:10px;color:var(--mu);font-family:var(--mo);">After setup, your Bin ID will be shown in the header. Share it with yourself to connect other devices.</div>
       </div>
     </div>
   </div>
@@ -503,8 +518,10 @@ select:focus{border-color:var(--ac);}select option{background:#1b1e22;}
       <div class="hdr-sub" id="today"></div>
     </div>
     <div class="hdr-right">
-      <div class="as-badge"><div class="as-dot" id="asdot"></div><span id="aslbl">auto-saving every 10s</span></div>
-      <div id="syncBadge" style="font-family:var(--mo);font-size:10px;color:var(--mu);display:flex;align-items:center;gap:5px;"></div>
+      <div class="as-badge"><div class="as-dot" id="asdot"></div><span id="aslbl">auto-saving</span></div>
+      <div id="syncBadge" style="font-family:var(--mo);font-size:10px;color:var(--mu);display:flex;align-items:center;gap:4px;"></div>
+      <button onclick="doSync()" id="syncBtn" style="background:none;border:0.5px solid var(--b2);border-radius:7px;padding:5px 12px;font-family:var(--mo);font-size:10px;color:var(--m2);cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--ac)';this.style.color='var(--ac)'" onmouseout="this.style.borderColor='var(--b2)';this.style.color='var(--m2)'">⇅ Sync</button>
+      <button onclick="showSetup()" style="background:none;border:0.5px solid var(--b1);border-radius:7px;padding:5px 12px;font-family:var(--mo);font-size:10px;color:var(--mu);cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--b2)';this.style.color='var(--m2)'" onmouseout="this.style.borderColor='var(--b1)';this.style.color='var(--mu)'">☁ Cloud</button>
     </div>
   </div>
 
@@ -643,33 +660,31 @@ let editingLog = null;  // {tid, lid}
 let editingAch = null;  // {tid, aid}
 
 // ── CLOUD STORAGE (JSONBin.io) ────────────────────────────────────────────────
-// Config stored in localStorage (just the API key + bin ID, not task data)
 const CFG_KEY = 'jt_cloud_cfg';
-let cloudCfg = null; // {apiKey, binId}
+let cloudCfg = null;
 
-function loadCfg(){
-  try{ cloudCfg=JSON.parse(localStorage.getItem(CFG_KEY)||'null'); }catch{ cloudCfg=null; }
-}
+function loadCfg(){ try{cloudCfg=JSON.parse(localStorage.getItem(CFG_KEY)||'null');}catch{cloudCfg=null;} }
 function saveCfg(cfg){ cloudCfg=cfg; localStorage.setItem(CFG_KEY,JSON.stringify(cfg)); }
+function clearCfg(){ cloudCfg=null; localStorage.removeItem(CFG_KEY); }
 
-// Full data shape stored in bin: { p_tasks, q_tasks, p_cs, q_cs }
-let _cloudData = null;
-let _dirty = false;
-let _syncing = false;
+function setSyncBadge(text,color){
+  const el=document.getElementById('syncBadge');
+  if(el)el.innerHTML=text?`<span style="width:5px;height:5px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;margin-right:4px;"></span>${text}`:'';
+}
 
-async function fetchCloud(){
+async function cloudGET(){
   if(!cloudCfg)return null;
   try{
     const r=await fetch('https://api.jsonbin.io/v3/b/'+cloudCfg.binId+'/latest',{
-      headers:{'X-Master-Key':cloudCfg.apiKey}
+      headers:{'X-Master-Key':cloudCfg.apiKey,'X-Bin-Meta':'false'}
     });
-    if(!r.ok)return null;
+    if(!r.ok){console.warn('Cloud GET failed',r.status);return null;}
     const j=await r.json();
-    return j.record||{};
-  }catch{return null;}
+    return j;
+  }catch(e){console.warn('Cloud GET error',e);return null;}
 }
 
-async function pushCloud(data){
+async function cloudPUT(data){
   if(!cloudCfg)return false;
   try{
     const r=await fetch('https://api.jsonbin.io/v3/b/'+cloudCfg.binId,{
@@ -677,90 +692,160 @@ async function pushCloud(data){
       headers:{'Content-Type':'application/json','X-Master-Key':cloudCfg.apiKey},
       body:JSON.stringify(data)
     });
+    if(!r.ok){console.warn('Cloud PUT failed',r.status);}
     return r.ok;
-  }catch{return false;}
+  }catch(e){console.warn('Cloud PUT error',e);return false;}
 }
 
-async function createBin(apiKey){
-  const r=await fetch('https://api.jsonbin.io/v3/b',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','X-Master-Key':apiKey,'X-Bin-Name':'JayanthTracker','X-Bin-Private':'true'},
-    body:JSON.stringify({p_tasks:[],q_tasks:[],p_cs:[],q_cs:[]})
-  });
-  if(!r.ok)return null;
-  const j=await r.json();
-  return j.metadata&&j.metadata.id?j.metadata.id:null;
+async function cloudCreateBin(apiKey){
+  try{
+    const r=await fetch('https://api.jsonbin.io/v3/b',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-Master-Key':apiKey,'X-Bin-Name':'JayanthTracker','X-Bin-Private':'true'},
+      body:JSON.stringify({v:1,p:[],q:[],pc:[],qc:[]})
+    });
+    if(!r.ok){console.warn('Create bin failed',r.status,await r.text());return null;}
+    const j=await r.json();
+    return j.metadata&&j.metadata.id?j.metadata.id:null;
+  }catch(e){console.warn('Create bin error',e);return null;}
 }
 
-function setSyncBadge(text,color){
-  const el=document.getElementById('syncBadge');
-  if(el)el.innerHTML=`<span style="width:5px;height:5px;border-radius:50%;background:${color};flex-shrink:0;"></span>${text}`;
-}
-
-// Always save to localStorage immediately (instant, survives refresh)
-// AND push to cloud asynchronously (syncs other devices)
-function load(b){
-  try{return JSON.parse(localStorage.getItem('jt8_'+b)||'[]');}catch{return[];}
-}
+// ── LOCAL STORAGE (always immediate) ─────────────────────────────────────────
+function load(b){try{return JSON.parse(localStorage.getItem('jt8_'+b)||'[]');}catch{return[];}}
 function save(b,t){
   localStorage.setItem('jt8_'+b,JSON.stringify(t));
-  if(_cloudData){ _cloudData[b+'_tasks']=t; _dirty=true; schedPush(); }
+  schedPush();
 }
-function loadCS(b){
-  try{return JSON.parse(localStorage.getItem('jt8_cs_'+b)||'[]');}catch{return[];}
-}
+function loadCS(b){try{return JSON.parse(localStorage.getItem('jt8_cs_'+b)||'[]');}catch{return[];}}
 function saveCS(b,cs){
   localStorage.setItem('jt8_cs_'+b,JSON.stringify(cs));
-  if(_cloudData){ _cloudData[b+'_cs']=cs; _dirty=true; schedPush(); }
+  schedPush();
 }
 function getT(){return load(board);}
 function setT(t){save(board,t);}
 function getCS(){return loadCS(board);}
 function setCS(cs){saveCS(board,cs);}
 
-let _pushTimer=null;
-function schedPush(){
-  clearTimeout(_pushTimer);
-  _pushTimer=setTimeout(doPush,1500); // debounce 1.5s after last change
+// Build full snapshot from localStorage to push to cloud
+function buildSnapshot(){
+  return{v:1,
+    p:load('p'),q:load('q'),
+    pc:loadCS('p'),qc:loadCS('q')
+  };
 }
-async function doPush(){
-  if(!_dirty||!_cloudData||_syncing)return;
-  _syncing=true; _dirty=false;
-  setSyncBadge('saving…','var(--ac)');
-  const ok=await pushCloud(_cloudData);
-  _syncing=false;
-  if(ok){ setSyncBadge('saved','var(--gr)'); setTimeout(()=>setSyncBadge('','transparent'),2000); }
-  else{ _dirty=true; setSyncBadge('sync error','var(--rd)'); }
+// Write cloud snapshot into localStorage
+function applySnapshot(snap){
+  if(!snap)return;
+  if(snap.p) localStorage.setItem('jt8_p',JSON.stringify(snap.p));
+  if(snap.q) localStorage.setItem('jt8_q',JSON.stringify(snap.q));
+  if(snap.pc) localStorage.setItem('jt8_cs_p',JSON.stringify(snap.pc));
+  if(snap.qc) localStorage.setItem('jt8_cs_q',JSON.stringify(snap.qc));
 }
 
-async function pullAndRender(){
+let _pushTimer=null;
+function schedPush(){
+  if(!cloudCfg)return;
+  clearTimeout(_pushTimer);
+  _pushTimer=setTimeout(doPush,1000);
+}
+let _pushing=false;
+async function doPush(){
+  if(!cloudCfg||_pushing)return;
+  _pushing=true;
+  setSyncBadge('saving…','var(--ac)');
+  const ok=await cloudPUT(buildSnapshot());
+  _pushing=false;
+  if(ok){setSyncBadge('saved ✓','var(--gr)');setTimeout(()=>setSyncBadge('',''),3000);}
+  else{setSyncBadge('sync error','var(--rd)');}
+}
+
+// Manual sync button
+async function doSync(){
+  if(!cloudCfg){showSetup();return;}
   setSyncBadge('syncing…','var(--ac)');
-  const data=await fetchCloud();
-  if(data){
-    _cloudData=data;
-    setSyncBadge('synced','var(--gr)');
-    setTimeout(()=>setSyncBadge('','transparent'),2000);
+  const snap=await cloudGET();
+  if(snap){
+    applySnapshot(snap);
+    setSyncBadge('synced ✓','var(--gr)');
+    setTimeout(()=>setSyncBadge('',''),3000);
     render();
   } else {
-    setSyncBadge('offline','var(--mu)');
+    setSyncBadge('sync failed','var(--rd)');
   }
 }
 
-// Setup flow
+// ── SETUP ──────────────────────────────────────────────────────────────────────
+function showSetup(){
+  document.getElementById('setup').style.display='block';
+  document.getElementById('setupErr').textContent='';
+  const el=document.getElementById('setupKey');
+  if(el&&cloudCfg)el.value=cloudCfg.apiKey||'';
+}
+function hideSetup(){
+  // Only allow closing setup if cloud is configured, OR if app is already open
+  if(cloudCfg||document.getElementById('app').style.display!=='none'){
+    document.getElementById('setup').style.display='none';
+  }
+}
+
 async function setupConnect(){
   const keyEl=document.getElementById('setupKey');
   const errEl=document.getElementById('setupErr');
-  const key=(keyEl.value||'').trim();
-  if(!key){errEl.textContent='Please enter your Master Key.';return;}
+  const key=(keyEl?keyEl.value:'').trim();
+  if(!key){errEl.textContent='Please enter your Master Key.';errEl.style.color='var(--rd)';return;}
   errEl.textContent='Creating your storage bin…';
-  const binId=await createBin(key);
-  if(!binId){errEl.textContent='Could not connect. Check your Master Key and try again.';return;}
+  errEl.style.color='var(--m2)';
+
+  const binId=await cloudCreateBin(key);
+  if(!binId){
+    errEl.textContent='Could not connect. Double-check your Master Key and try again.';
+    errEl.style.color='var(--rd)';
+    return;
+  }
   saveCfg({apiKey:key,binId});
-  _cloudData={p_tasks:[],q_tasks:[],p_cs:[],q_cs:[]};
-  document.getElementById('setup').style.display='none';
-  document.getElementById('app').style.display='block';
-  setSyncBadge('connected','var(--gr)');
-  boot();
+  await cloudPUT(buildSnapshot());
+
+  // Show Bin ID prominently — user needs this for other devices
+  const binEl=document.getElementById('setupBinId');
+  if(binEl)binEl.value=binId;
+  errEl.style.color='var(--gr)';
+  errEl.innerHTML='✓ Connected! <strong>Your Bin ID: '+binId+'</strong> — copy this, you need it to connect other devices';
+
+  setTimeout(()=>{
+    hideSetup();
+    document.getElementById('app').style.display='block';
+    setSyncBadge('connected ✓','var(--gr)');
+    setTimeout(()=>setSyncBadge('',''),3000);
+    boot();
+  },3000);
+}
+
+async function setupConnectExisting(){
+  const keyEl=document.getElementById('setupKey');
+  const binEl=document.getElementById('setupBinId');
+  const errEl=document.getElementById('setupErr');
+  const key=(keyEl?keyEl.value:'').trim();
+  const binId=(binEl?binEl.value:'').trim();
+  if(!key||!binId){errEl.textContent='Enter both Master Key and Bin ID.';errEl.style.color='var(--rd)';return;}
+  errEl.textContent='Connecting to your bin…';errEl.style.color='var(--m2)';
+  saveCfg({apiKey:key,binId});
+  const snap=await cloudGET();
+  if(!snap){
+    clearCfg();
+    errEl.textContent='Could not connect. Check your keys and try again.';
+    errEl.style.color='var(--rd)';
+    return;
+  }
+  applySnapshot(snap);
+  errEl.textContent='✓ Connected! Loading your tasks…';
+  errEl.style.color='var(--gr)';
+  setTimeout(()=>{
+    hideSetup();
+    document.getElementById('app').style.display='block';
+    setSyncBadge('synced ✓','var(--gr)');
+    setTimeout(()=>setSyncBadge('',''),3000);
+    boot();
+  },1200);
 }
 
 function allStatuses(){
@@ -836,12 +921,10 @@ function tryUnlock(){
   if(inp.value===PASS){
     sessionStorage.setItem('jtu','1');
     document.getElementById('lock').style.display='none';
-    loadCfg();
     if(!cloudCfg){
-      // First time — show setup screen
+      // No cloud configured yet — MUST set up before using app
       document.getElementById('setup').style.display='block';
     } else {
-      // Already configured — go straight to app
       document.getElementById('app').style.display='block';
       boot();
     }
@@ -862,45 +945,34 @@ async function boot(){
 
   setInterval(()=>{
     const dot=document.getElementById('asdot'),lbl=document.getElementById('aslbl');
-    if(dot){dot.classList.add('pulse');}
+    if(dot)dot.classList.add('pulse');
     if(lbl)lbl.textContent='saved '+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-    setTimeout(()=>{if(dot)dot.classList.remove('pulse');if(lbl)lbl.textContent='auto-saving every 10s';},1400);
+    setTimeout(()=>{if(dot)dot.classList.remove('pulse');if(lbl)lbl.textContent='auto-saving';},1400);
   },10000);
 
-  // Render immediately from localStorage so page never looks empty
+  // Render immediately from localStorage
   render();
 
-  // Then pull from cloud in background and update if data differs
+  // If cloud configured, pull latest in background
   if(cloudCfg){
     setSyncBadge('syncing…','var(--ac)');
-    const data=await fetchCloud();
-    if(data){
-      // Merge: cloud wins for tasks (other devices may have added tasks)
-      // Write cloud data into localStorage so this device is up to date
-      ['p','q'].forEach(b=>{
-        if(data[b+'_tasks']) localStorage.setItem('jt8_'+b,JSON.stringify(data[b+'_tasks']));
-        if(data[b+'_cs'])    localStorage.setItem('jt8_cs_'+b,JSON.stringify(data[b+'_cs']));
-      });
-      _cloudData=data;
-      setSyncBadge('synced','var(--gr)');
-      setTimeout(()=>setSyncBadge('','transparent'),2000);
-      render(); // re-render with cloud data
+    const snap=await cloudGET();
+    if(snap){
+      applySnapshot(snap);
+      setSyncBadge('synced ✓','var(--gr)');
+      setTimeout(()=>setSyncBadge('',''),3000);
+      render();
     } else {
-      // Cloud unreachable — use what's in localStorage (already rendered)
       setSyncBadge('offline','var(--mu)');
     }
-    // Auto-pull every 30s to catch changes from other devices
+    // Auto-pull every 30s
     setInterval(async()=>{
-      const d=await fetchCloud();
-      if(d){
-        ['p','q'].forEach(b=>{
-          if(d[b+'_tasks']) localStorage.setItem('jt8_'+b,JSON.stringify(d[b+'_tasks']));
-          if(d[b+'_cs'])    localStorage.setItem('jt8_cs_'+b,JSON.stringify(d[b+'_cs']));
-        });
-        _cloudData=d;
-        render();
-      }
+      const s=await cloudGET();
+      if(s){applySnapshot(s);render();}
     },30000);
+  } else {
+    // Show cloud setup prompt subtly
+    setSyncBadge('no cloud sync','var(--mu)');
   }
 }
 
@@ -1620,7 +1692,7 @@ if(sessionStorage.getItem('jtu')==='1'){
   } else {
     document.getElementById('app').style.display='block';
     if(document.readyState!=='loading') boot();
-    else document.addEventListener('DOMContentLoaded', boot);
+    else document.addEventListener('DOMContentLoaded',boot);
   }
 } else {
   document.getElementById('linp').focus();
