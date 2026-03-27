@@ -697,22 +697,21 @@ function setSyncBadge(text,color){
   if(el)el.innerHTML=`<span style="width:5px;height:5px;border-radius:50%;background:${color};flex-shrink:0;"></span>${text}`;
 }
 
-// Local fallback keys
+// Always save to localStorage immediately (instant, survives refresh)
+// AND push to cloud asynchronously (syncs other devices)
 function load(b){
-  if(_cloudData)return (_cloudData[b+'_tasks']||[]);
   try{return JSON.parse(localStorage.getItem('jt8_'+b)||'[]');}catch{return[];}
 }
 function save(b,t){
+  localStorage.setItem('jt8_'+b,JSON.stringify(t));
   if(_cloudData){ _cloudData[b+'_tasks']=t; _dirty=true; schedPush(); }
-  else localStorage.setItem('jt8_'+b,JSON.stringify(t));
 }
 function loadCS(b){
-  if(_cloudData)return (_cloudData[b+'_cs']||[]);
   try{return JSON.parse(localStorage.getItem('jt8_cs_'+b)||'[]');}catch{return[];}
 }
 function saveCS(b,cs){
+  localStorage.setItem('jt8_cs_'+b,JSON.stringify(cs));
   if(_cloudData){ _cloudData[b+'_cs']=cs; _dirty=true; schedPush(); }
-  else localStorage.setItem('jt8_cs_'+b,JSON.stringify(cs));
 }
 function getT(){return load(board);}
 function setT(t){save(board,t);}
@@ -861,7 +860,6 @@ async function boot(){
   inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addTask();}});
   document.getElementById('newStatusInp').addEventListener('keydown',e=>{if(e.key==='Enter')addCustomStatus();});
 
-  // Auto-save indicator (local)
   setInterval(()=>{
     const dot=document.getElementById('asdot'),lbl=document.getElementById('aslbl');
     if(dot){dot.classList.add('pulse');}
@@ -869,19 +867,40 @@ async function boot(){
     setTimeout(()=>{if(dot)dot.classList.remove('pulse');if(lbl)lbl.textContent='auto-saving every 10s';},1400);
   },10000);
 
-  // Pull from cloud on load
-  if(cloudCfg){
-    setSyncBadge('loading…','var(--ac)');
-    const data=await fetchCloud();
-    if(data){ _cloudData=data; setSyncBadge('','transparent'); }
-    else { setSyncBadge('offline — using local','var(--mu)'); }
-  }
-
+  // Render immediately from localStorage so page never looks empty
   render();
 
-  // Auto-pull from cloud every 30 seconds (so other devices' changes appear)
+  // Then pull from cloud in background and update if data differs
   if(cloudCfg){
-    setInterval(pullAndRender, 30000);
+    setSyncBadge('syncing…','var(--ac)');
+    const data=await fetchCloud();
+    if(data){
+      // Merge: cloud wins for tasks (other devices may have added tasks)
+      // Write cloud data into localStorage so this device is up to date
+      ['p','q'].forEach(b=>{
+        if(data[b+'_tasks']) localStorage.setItem('jt8_'+b,JSON.stringify(data[b+'_tasks']));
+        if(data[b+'_cs'])    localStorage.setItem('jt8_cs_'+b,JSON.stringify(data[b+'_cs']));
+      });
+      _cloudData=data;
+      setSyncBadge('synced','var(--gr)');
+      setTimeout(()=>setSyncBadge('','transparent'),2000);
+      render(); // re-render with cloud data
+    } else {
+      // Cloud unreachable — use what's in localStorage (already rendered)
+      setSyncBadge('offline','var(--mu)');
+    }
+    // Auto-pull every 30s to catch changes from other devices
+    setInterval(async()=>{
+      const d=await fetchCloud();
+      if(d){
+        ['p','q'].forEach(b=>{
+          if(d[b+'_tasks']) localStorage.setItem('jt8_'+b,JSON.stringify(d[b+'_tasks']));
+          if(d[b+'_cs'])    localStorage.setItem('jt8_cs_'+b,JSON.stringify(d[b+'_cs']));
+        });
+        _cloudData=d;
+        render();
+      }
+    },30000);
   }
 }
 
